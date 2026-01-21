@@ -1,0 +1,24 @@
+services:
+  acquirer-core:
+    build:
+      context: .
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/acquiring
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+      SPRING_REDIS_HOST: redis
+
+      # Se o Kafka estiver no compose infra com listener interno
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      CARD_CERTIFIER_BASE_URL: http://card-certifier:8086
+      BRAND_NETWORK_BASE_URL: http://brand-network-hub:8087
+
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+
+networks:
+  default:
+    name: acquiring-net

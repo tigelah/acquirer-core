@@ -10,18 +10,18 @@ public class Payment {
     private final UUID id;
     private final String merchantId;
     private final String orderId;
-    private final BigDecimal amountCents;
+    private final Long amountCents;
     private final String currency;
     private final String panLast4;
     private PaymentStatus status;
     private String authCode;
     private final Instant createdAt;
 
-    public Payment(UUID id, String merchantId, String orderId, BigDecimal amountCents, String currency, String panLast4, Instant createdAt) {
+    public Payment(UUID id, String merchantId, String orderId, Long amountCents, String currency, String panLast4, Instant createdAt) {
         this.id = Objects.requireNonNull(id);
         this.merchantId = requireNonBlank(merchantId, "merchantId");
         this.orderId = requireNonBlank(orderId, "orderId");
-        if (amountCents.longValue() <= 0) throw new IllegalArgumentException("amountCents must be > 0");
+        if (amountCents <= 0) throw new IllegalArgumentException("amountCents must be > 0");
         this.amountCents = amountCents;
         this.currency = requireNonBlank(currency, "currency");
         this.panLast4 = requireNonBlank(panLast4, "panLast4");
@@ -81,7 +81,7 @@ public class Payment {
     public UUID getId() { return id; }
     public String getMerchantId() { return merchantId; }
     public String getOrderId() { return orderId; }
-    public BigDecimal getAmountCents() { return amountCents; }
+    public Long getAmountCents() { return amountCents; }
     public String getCurrency() { return currency; }
     public String getPanLast4() { return panLast4; }
     public PaymentStatus getStatus() { return status; }
