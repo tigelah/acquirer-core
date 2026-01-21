@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.1</version>
+        <version>3.4.1</version>
         <relativePath/>
     </parent>
 
@@ -46,6 +46,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>10.17.0</version>
         </dependency>
 
         <dependency>
@@ -81,9 +82,15 @@
         </dependency>
         <dependency>
             <groupId>org.wiremock</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>3.6.0</version>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.9.1</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
     </dependencies>
 
@@ -106,40 +113,92 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
+                <version>0.8.12</version>
                 <executions>
+
+                    <!-- Injeta o agente no ciclo de testes (unit tests) -->
                     <execution>
-                        <goals><goal>prepare-agent</goal></goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals><goal>report</goal></goals>
-                    </execution>
-                    <execution>
-                        <id>check</id>
-                        <phase>verify</phase>
-                        <goals><goal>check</goal></goals>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
                         <configuration>
+                            <!-- arquivo de execução -->
+                            <destFile>${project.build.directory}/jacoco.exec</destFile>
+                            <!-- surefire vai usar isso automaticamente -->
+                        </configuration>
+                    </execution>
+
+                    <!-- Gera relatórios no phase verify -->
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+                            <formats>
+                                <format>HTML</format>
+                                <format>XML</format>
+                            </formats>
+                            <excludes>
+                                <!-- Exclua bootstrap e classes "sem lógica" -->
+                                <exclude>**/*Application.*</exclude>
+                                <exclude>**/*Config.*</exclude>
+                                <exclude>**/*Configuration.*</exclude>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/entrypoints/**</exclude>
+                                <exclude>**/infrastructure/db/*Entity.*</exclude>
+                                <exclude>**/*Exception.*</exclude>
+                                <exclude>**/*Properties.*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+
+                    <!-- Gate de cobertura -->
+                    <execution>
+                        <id>jacoco-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
                                     <limits>
+                                        <!-- 80% de instructions (bom padrão) -->
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <minimum>0.80</minimum>
                                         </limit>
+
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.70</minimum>
+                                        </limit>
                                     </limits>
                                 </rule>
                             </rules>
+
                             <excludes>
-                                <exclude>**/*Application*</exclude>
-                                <exclude>**/*Config*</exclude>
-                                <exclude>**/infrastructure/db/*Entity*</exclude>
+                                <exclude>**/*Application.*</exclude>
+                                <exclude>**/*Config.*</exclude>
+                                <exclude>**/*Configuration.*</exclude>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/entrypoints/**</exclude>
+                                <exclude>**/infrastructure/db/*Entity.*</exclude>
+                                <exclude>**/*Exception.*</exclude>
+                                <exclude>**/*Properties.*</exclude>
                             </excludes>
                         </configuration>
                     </execution>
+
                 </executions>
             </plugin>
         </plugins>

@@ -24,7 +24,7 @@ public class OutboxWriter {
         e.aggregateType = aggregateType;
         e.aggregateId = aggregateId;
         e.topic = topic;
-        e.key = key;
+        e.messageKey = key;
         e.payloadJson = payloadJson;
         e.status = "PENDING";
         e.attempts = 0;

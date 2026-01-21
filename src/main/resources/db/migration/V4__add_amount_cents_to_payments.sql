@@ -1,0 +1,2 @@
+ALTER TABLE payments
+    ADD COLUMN amount_cents BIGINT NOT NULL DEFAULT 0;

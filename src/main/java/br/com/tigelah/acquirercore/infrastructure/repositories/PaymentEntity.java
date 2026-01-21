@@ -5,34 +5,36 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "payments", indexes = {
-        @Index(name = "idx_payments_merchant_order", columnList = "merchantId,orderId", unique = true)
-})
+@Table(
+        name = "payments",
+        indexes = {@Index(name = "idx_payments_merchant_order", columnList = "merchant_id, order_id", unique = true)}
+)
 public class PaymentEntity {
     @Id
     public UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "merchant_id", nullable = false)
     public String merchantId;
 
-    @Column(nullable = false)
+    @Column(name = "order_id", nullable = false)
     public String orderId;
 
-    @Column(nullable = false)
+    @Column(name = "amount_cents", nullable = false)
     public Long amountCents;
 
     @Column(nullable = false)
     public String currency;
 
-    @Column(nullable = false)
+    @Column(name = "pan_last4", nullable = false)
     public String panLast4;
 
     @Column(nullable = false)
     public String status;
 
+    @Column(name = "auth_code")
     public String authCode;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     public Instant createdAt;
 
     @Version

@@ -1,6 +1,6 @@
 create table if not exists payments (
-                                        id uuid primary key,
-                                        merchant_id varchar(64) not null,
+    id uuid primary key,
+    merchant_id varchar(64) not null,
     order_id varchar(64) not null,
     amount_cents bigint not null,
     currency varchar(8) not null,
@@ -13,18 +13,22 @@ create table if not exists payments (
 
 create unique index if not exists idx_payments_merchant_order on payments(merchant_id, order_id);
 
-create table if not exists outbox_event (
-                                            id uuid primary key,
-                                            aggregate_type varchar(64) not null,
-    aggregate_id uuid not null,
-    topic varchar(128) not null,
-    key varchar(128) not null,
-    payload_json text not null,
-    status varchar(16) not null,
-    attempts int not null,
-    created_at timestamptz not null,
-    sent_at timestamptz,
-    version bigint not null default 0
+CREATE TABLE IF NOT EXISTS outbox_event (
+    id              UUID PRIMARY KEY,
+    aggregate_type  VARCHAR(64) NOT NULL,
+    aggregate_id    UUID NOT NULL,
+    topic           VARCHAR(128) NOT NULL,
+    message_key          VARCHAR(128) NOT NULL,
+    payload_json    TEXT NOT NULL,
+    status          VARCHAR(16) NOT NULL DEFAULT 'PENDING',
+    attempts        INT NOT NULL DEFAULT 0,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    sent_at         TIMESTAMPTZ,
+    version         BIGINT NOT NULL DEFAULT 0
     );
 
-create index if not exists idx_outbox_status on outbox_event(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_outbox_status_created
+    ON outbox_event (status, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_outbox_aggregate
+    ON outbox_event (aggregate_type, aggregate_id);

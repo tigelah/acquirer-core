@@ -31,7 +31,7 @@ public class OutboxPublisherScheduler {
         var items = outbox.findPending(PageRequest.of(0, 50));
         for (var e : items) {
             try {
-                kafka.send(e.topic, e.key, e.payloadJson).get(); // sync for simplicity in simulator
+                kafka.send(e.topic, e.messageKey, e.payloadJson).get(); // sync for simplicity in simulator
                 e.status = "SENT";
                 e.sentAt = Instant.now(clock);
             } catch (Exception ex) {
