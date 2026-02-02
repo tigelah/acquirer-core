@@ -1,6 +1,7 @@
 package br.com.tigelah.acquirercore.application;
 
 import br.com.tigelah.acquirercore.application.commands.AuthorizePaymentCommand;
+import br.com.tigelah.acquirercore.application.security.PanHasher;
 import br.com.tigelah.acquirercore.application.usecase.AuthorizePaymentUseCase;
 import br.com.tigelah.acquirercore.domain.model.Payment;
 import br.com.tigelah.acquirercore.domain.ports.*;
@@ -32,14 +33,18 @@ class AuthorizePaymentUseCaseTest {
 
         var paymentId = UUID.randomUUID();
         when(idem.get("k1")).thenReturn(Optional.of(paymentId));
-        when(payments.getOrThrow(paymentId)).thenReturn(new Payment(paymentId, "m1","o1",1000L,"BRL","1111", Instant.now(clock)));
+        when(payments.getOrThrow(paymentId)).thenReturn(
+                new Payment(paymentId, "m1","o1",1000L,"BRL","1111", Instant.now(clock))
+        );
 
         var uc = new AuthorizePaymentUseCase(payments, idem, events, certifier, brand, clock);
 
         var out = uc.execute(new AuthorizePaymentCommand(
                 "m1","o1",1000L,"BRL",
                 new CardCertifier.CardData("4111111111111111","JOAO","12","2030","123"),
-                "c1","k1"
+                "c1","k1",
+                UUID.randomUUID(),
+                "user-1"
         ));
 
         assertEquals(paymentId, out.id());
@@ -47,7 +52,7 @@ class AuthorizePaymentUseCaseTest {
     }
 
     @Test
-    void should_certify_and_enqueue_event() {
+    void should_certify_and_enqueue_event_with_limits_context() {
         var payments = mock(PaymentRepository.class);
         var idem = mock(IdempotencyStore.class);
         var events = mock(EventPublisher.class);
@@ -63,16 +68,29 @@ class AuthorizePaymentUseCaseTest {
 
         var uc = new AuthorizePaymentUseCase(payments, idem, events, certifier, brand, clock);
 
+        var accountId = UUID.randomUUID();
+        var pan = "4111111111111111";
+
         uc.execute(new AuthorizePaymentCommand(
                 "m1","o1",1000L,"BRL",
-                new CardCertifier.CardData("4111111111111111","JOAO","12","2030","123"),
-                "c1","k1"
+                new CardCertifier.CardData(pan,"JOAO","12","2030","123"),
+                "c1","k1",
+                accountId,
+                "user-1"
         ));
 
         var captor = ArgumentCaptor.forClass(Payment.class);
         verify(payments).save(captor.capture());
-        assertEquals("m1", captor.getValue().getMerchantId());
-        assertEquals("1111", captor.getValue().getPanLast4());
+
+        var saved = captor.getValue();
+        assertEquals("m1", saved.getMerchantId());
+        assertEquals("1111", saved.getPanLast4());
+
+        // NOVAS ASSERTS
+        assertEquals(accountId, saved.getAccountId());
+        assertEquals("user-1", saved.getUserId());
+        assertEquals(PanHasher.sha256(pan), saved.getPanHash());
+
         verify(events).publishAuthorizeRequested(any(Payment.class), eq("c1"), eq("k1"));
     }
 }

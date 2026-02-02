@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Component
 public class PaymentRepositoryAdapter implements PaymentRepository {
+
     private final JpaPaymentRepository jpa;
 
     public PaymentRepositoryAdapter(JpaPaymentRepository jpa) {
@@ -47,11 +48,26 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         e.status = p.getStatus().name();
         e.authCode = p.getAuthCode();
         e.createdAt = p.getCreatedAt();
+        e.accountId = p.getAccountId();
+        e.userId = p.getUserId();
+        e.panHash = p.getPanHash();
+
         return e;
     }
 
     private static Payment toDomain(PaymentEntity e) {
         var p = new Payment(e.id, e.merchantId, e.orderId, e.amountCents, e.currency, e.panLast4, e.createdAt);
+
+        if (e.accountId != null) {
+            p.setAccountId(e.accountId);
+        }
+        if (e.userId != null && !e.userId.isBlank()) {
+            p.setUserId(e.userId);
+        }
+        if (e.panHash != null && !e.panHash.isBlank()) {
+            p.setPanHash(e.panHash);
+        }
+
         return PaymentRehydrator.rehydrate(p, PaymentStatus.valueOf(e.status), e.authCode);
     }
 }

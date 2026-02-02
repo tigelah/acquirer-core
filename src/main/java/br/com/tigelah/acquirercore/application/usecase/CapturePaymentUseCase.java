@@ -16,9 +16,15 @@ public class CapturePaymentUseCase {
 
     public PaymentOutput execute(CapturePaymentCommand cmd) {
         var payment = payments.getOrThrow(cmd.paymentId());
+
+        if (!payment.canCapture()) {
+            throw new IllegalStateException("capture_not_allowed");
+        }
+
         payment.markCaptureRequested();
         payments.save(payment);
         events.publishCaptureRequested(payment, cmd.correlationId());
+
         return PaymentOutput.from(payment);
     }
 }

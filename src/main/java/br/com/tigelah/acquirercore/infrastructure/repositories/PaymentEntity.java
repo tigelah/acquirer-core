@@ -39,5 +39,14 @@ public class PaymentEntity {
 
     @Version
     public long version;
+
+    @Column(name = "account_id")
+    public UUID accountId;
+
+    @Column(name = "user_id")
+    public String userId;
+
+    @Column(name = "pan_hash")
+    public String panHash;
 }
 
