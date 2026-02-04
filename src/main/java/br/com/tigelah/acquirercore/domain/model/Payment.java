@@ -18,6 +18,7 @@ public class Payment {
     private UUID accountId;
     private String userId;
     private String panHash;
+    private Integer installments;
 
     public Payment(
             UUID id,
@@ -38,8 +39,12 @@ public class Payment {
         this.status = PaymentStatus.CREATED;
         this.createdAt = Objects.requireNonNull(createdAt);
     }
+    public void setInstallments(Integer installments) {
+        if (installments == null || installments < 1) throw new IllegalArgumentException("installments must be >= 1");
+        this.installments = installments;
+    }
 
-    // --- Regras de estado ---
+
     public void markAuthRequested() {
         ensureStatus(PaymentStatus.CREATED, "auth request");
         this.status = PaymentStatus.AUTH_REQUESTED;
@@ -119,4 +124,5 @@ public class Payment {
     public PaymentStatus getStatus() { return status; }
     public String getAuthCode() { return authCode; }
     public Instant getCreatedAt() { return createdAt; }
+    public Integer getInstallments() { return installments; }
 }

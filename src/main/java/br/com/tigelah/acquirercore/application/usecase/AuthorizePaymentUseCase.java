@@ -49,6 +49,9 @@ public class AuthorizePaymentUseCase {
             return PaymentOutput.from(payments.getOrThrow(maybePaymentId.get()));
         }
 
+        var installments = cmd.installments() <= 0 ? 1 : cmd.installments();
+
+
         var existing = payments.findByMerchantAndOrder(cmd.merchantId(), cmd.orderId());
         if (existing.isPresent()) {
             idempotency.putIfAbsent(cmd.idempotencyKey(), existing.get().getId());
@@ -81,7 +84,7 @@ public class AuthorizePaymentUseCase {
         payment.setAccountId(cmd.accountId());
         payment.setUserId(cmd.userId());
         payment.setPanHash(panHash);
-
+        payment.setInstallments(installments);
         payment.markAuthRequested();
         payments.save(payment);
 

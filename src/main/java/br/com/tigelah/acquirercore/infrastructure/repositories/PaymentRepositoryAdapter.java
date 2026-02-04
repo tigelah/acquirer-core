@@ -51,6 +51,7 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         e.accountId = p.getAccountId();
         e.userId = p.getUserId();
         e.panHash = p.getPanHash();
+        p.setInstallments(e.installments == null ? 1 : e.installments);
 
         return e;
     }
@@ -67,6 +68,8 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         if (e.panHash != null && !e.panHash.isBlank()) {
             p.setPanHash(e.panHash);
         }
+
+        e.installments = p.getInstallments() == null ? 1 : p.getInstallments();
 
         return PaymentRehydrator.rehydrate(p, PaymentStatus.valueOf(e.status), e.authCode);
     }

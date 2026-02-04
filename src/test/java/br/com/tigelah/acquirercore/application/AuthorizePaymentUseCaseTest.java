@@ -44,7 +44,8 @@ class AuthorizePaymentUseCaseTest {
                 new CardCertifier.CardData("4111111111111111","JOAO","12","2030","123"),
                 "c1","k1",
                 UUID.randomUUID(),
-                "user-1"
+                "user-1",
+                6
         ));
 
         assertEquals(paymentId, out.id());
@@ -76,7 +77,8 @@ class AuthorizePaymentUseCaseTest {
                 new CardCertifier.CardData(pan,"JOAO","12","2030","123"),
                 "c1","k1",
                 accountId,
-                "user-1"
+                "user-1",
+                6
         ));
 
         var captor = ArgumentCaptor.forClass(Payment.class);
@@ -85,8 +87,7 @@ class AuthorizePaymentUseCaseTest {
         var saved = captor.getValue();
         assertEquals("m1", saved.getMerchantId());
         assertEquals("1111", saved.getPanLast4());
-
-        // NOVAS ASSERTS
+        assertEquals(6, saved.getInstallments());
         assertEquals(accountId, saved.getAccountId());
         assertEquals("user-1", saved.getUserId());
         assertEquals(PanHasher.sha256(pan), saved.getPanHash());

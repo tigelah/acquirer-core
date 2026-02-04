@@ -38,7 +38,7 @@ public class OutboxEventPublisher implements EventPublisher {
         if (payment.getAccountId() != null) payload.put("accountId", payment.getAccountId().toString());
         if (payment.getUserId() != null && !payment.getUserId().isBlank()) payload.put("userId", payment.getUserId());
         if (payment.getPanHash() != null && !payment.getPanHash().isBlank()) payload.put("panHash", payment.getPanHash());
-
+        payload.put("installments", payment.getInstallments() == null ? 1 : payment.getInstallments());
         enqueue(payment, Topics.PAYMENT_AUTHORIZE_REQUESTED, payment.getId().toString(), payload);
     }
 

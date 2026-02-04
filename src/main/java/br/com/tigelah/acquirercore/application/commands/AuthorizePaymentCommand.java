@@ -13,5 +13,6 @@ public record AuthorizePaymentCommand(
         String correlationId,
         String idempotencyKey,
         UUID accountId,
-        String userId
+        String userId,
+        Integer installments
 ) {}

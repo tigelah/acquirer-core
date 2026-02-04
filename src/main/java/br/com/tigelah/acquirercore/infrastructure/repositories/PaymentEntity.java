@@ -48,5 +48,8 @@ public class PaymentEntity {
 
     @Column(name = "pan_hash")
     public String panHash;
+
+    @Column(name = "installments", nullable = false)
+    public Integer installments;
 }
 
