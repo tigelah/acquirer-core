@@ -5,6 +5,7 @@ public enum PaymentStatus {
     AUTH_REQUESTED,
     RISK_REJECTED,
     AUTHORIZED,
+    AUTHORIZED_HOLD,
     DECLINED,
     CAPTURE_REQUESTED,
     CAPTURED,

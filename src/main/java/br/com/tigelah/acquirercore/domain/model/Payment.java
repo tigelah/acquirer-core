@@ -66,10 +66,6 @@ public class Payment {
         this.status = PaymentStatus.DECLINED;
     }
 
-    public void markCaptureRequested() {
-        ensureStatus(PaymentStatus.AUTHORIZED, "capture request");
-        this.status = PaymentStatus.CAPTURE_REQUESTED;
-    }
 
     public void markCaptured() {
         ensureStatus(PaymentStatus.CAPTURE_REQUESTED, "captured");
@@ -101,15 +97,6 @@ public class Payment {
         this.panHash = panHash;
     }
 
-    public void voidAuthorization() {
-        ensureStatus(PaymentStatus.AUTHORIZED, "void authorization");
-        this.status = PaymentStatus.VOIDED;
-    }
-
-    public void expireAuthorization() {
-        ensureStatus(PaymentStatus.AUTHORIZED, "expire authorization");
-        this.status = PaymentStatus.EXPIRED;
-    }
 
     private static String requireNonBlank(String v, String field) {
         if (v == null || v.isBlank()) throw new IllegalArgumentException(field + " must not be blank");
@@ -120,6 +107,27 @@ public class Payment {
         this.accountId = Objects.requireNonNull(accountId, "accountId is required");
     }
 
+
+    public void markAuthorizedHold(String authCode) {
+        ensureStatus(PaymentStatus.AUTH_REQUESTED, "mark authorized hold");
+        this.status = PaymentStatus.AUTHORIZED_HOLD;
+        this.authCode = requireNonBlank(authCode, "authCode");
+    }
+
+    public void voidAuthorization() {
+        ensureStatus(PaymentStatus.AUTHORIZED_HOLD, "void authorization");
+        this.status = PaymentStatus.VOIDED;
+    }
+
+    public void expireAuthorization() {
+        ensureStatus(PaymentStatus.AUTHORIZED_HOLD, "expire authorization");
+        this.status = PaymentStatus.EXPIRED;
+    }
+
+    public void markCaptureRequested() {
+        ensureStatus(PaymentStatus.AUTHORIZED_HOLD, "capture request");
+        this.status = PaymentStatus.CAPTURE_REQUESTED;
+    }
     public void setUserId(String userId) {
         this.userId = (userId == null || userId.isBlank()) ? null : userId;
     }

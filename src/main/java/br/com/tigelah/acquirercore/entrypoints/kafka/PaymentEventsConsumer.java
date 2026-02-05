@@ -36,7 +36,9 @@ public class PaymentEventsConsumer {
                     Topics.PAYMENT_AUTHORIZED,
                     Topics.PAYMENT_DECLINED,
                     Topics.PAYMENT_CAPTURED,
-                    Topics.SETTLEMENT_COMPLETED
+                    Topics.SETTLEMENT_COMPLETED,
+                    Topics.AUTHORIZATION_EXPIRED,
+                    Topics.AUTHORIZATION_VOIDED
             },
             groupId = "${kafka.consumer.group-id:acquirer-core}"
     )
