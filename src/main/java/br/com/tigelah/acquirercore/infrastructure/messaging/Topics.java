@@ -13,4 +13,6 @@ public final class Topics {
     public static final String PAYMENT_CAPTURED = "payment.captured";
 
     public static final String SETTLEMENT_COMPLETED = "settlement.completed";
+    public static final String AUTHORIZATION_VOIDED = "authorization.voided";
+    public static final String AUTHORIZATION_EXPIRED = "authorization.expired";
 }

@@ -8,5 +8,7 @@ public enum PaymentStatus {
     DECLINED,
     CAPTURE_REQUESTED,
     CAPTURED,
-    SETTLED
+    SETTLED,
+    VOIDED,
+    EXPIRED
 }

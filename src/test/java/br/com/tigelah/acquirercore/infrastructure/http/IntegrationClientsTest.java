@@ -37,11 +37,9 @@ class IntegrationClientsTest {
 
     @Test
     void should_call_certifier_and_brand() {
-        // Arrange
         certifier.stubFor(post(urlEqualTo("/certify"))
                 .withHeader("X-Correlation-Id", equalTo("c1"))
                 .withHeader("Content-Type", containing("application/json"))
-                // valida que o PAN foi enviado (sem exigir body inteiro)
                 .withRequestBody(matchingJsonPath("$.pan", equalTo("4111111111111111")))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -67,7 +65,6 @@ class IntegrationClientsTest {
     var certifierClient = new CardCertifierClient(rest, "http://localhost:" + certifier.port());
     var brandClient = new BrandNetworkClient(rest, "http://localhost:" + brand.port());
 
-    // Act
     var cert = certifierClient.certify(
         new CardCertifier.CardData("4111111111111111", "JOAO", "12", "2030", "123"),
         "c1"
@@ -79,7 +76,6 @@ class IntegrationClientsTest {
     var chk = brandClient.check("4111111111111111", "VISA", "c1");
     assertTrue(chk.allowed());
 
-    // Assert (verificação de chamadas)
     certifier.verify(1, postRequestedFor(urlEqualTo("/certify"))
         .withHeader("X-Correlation-Id", equalTo("c1")));
 
@@ -111,13 +107,12 @@ assertEquals("UNKNOWN", cert.brand());
 
 @Test
 void should_fail_when_brand_rejects() {
-// certifier OK
+
 certifier.stubFor(post(urlEqualTo("/certify"))
     .willReturn(okJson("""
         {"valid":true,"reason":"ok","brand":"VISA"}
         """)));
 
-    // brand bloqueia
     brand.stubFor(post(urlEqualTo("/brand/check"))
         .willReturn(okJson("""
         {"allowed":false,"reason":"bin_blocked"}

@@ -95,6 +95,22 @@ public class Payment {
         }
     }
 
+    public void bindLimitScope(UUID accountId, String userId, String panHash) {
+        this.accountId = accountId;
+        this.userId = userId;
+        this.panHash = panHash;
+    }
+
+    public void voidAuthorization() {
+        ensureStatus(PaymentStatus.AUTHORIZED, "void authorization");
+        this.status = PaymentStatus.VOIDED;
+    }
+
+    public void expireAuthorization() {
+        ensureStatus(PaymentStatus.AUTHORIZED, "expire authorization");
+        this.status = PaymentStatus.EXPIRED;
+    }
+
     private static String requireNonBlank(String v, String field) {
         if (v == null || v.isBlank()) throw new IllegalArgumentException(field + " must not be blank");
         return v;

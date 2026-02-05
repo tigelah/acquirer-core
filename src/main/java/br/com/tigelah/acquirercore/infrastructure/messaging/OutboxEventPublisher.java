@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -56,6 +57,19 @@ public class OutboxEventPublisher implements EventPublisher {
         if (payment.getPanHash() != null && !payment.getPanHash().isBlank()) payload.put("panHash", payment.getPanHash());
 
         enqueue(payment, Topics.PAYMENT_CAPTURE_REQUESTED, payment.getId().toString(), payload);
+    }
+
+    @Override
+    public void publishAuthorizationVoided(Payment payment, String correlationId, String reason) {
+        var payload =  baseEnvelope(correlationId,  Topics.AUTHORIZATION_VOIDED);
+
+        payload.put("paymentId", payment.getId().toString());
+        payload.put("accountId",payment.getAccountId() == null ? null : payment.getAccountId().toString());
+        payload.put("amountCents", payment.getAmountCents());
+        payload.put("currency", payment.getCurrency());
+        payload.put("reason", reason == null ? "merchant_void" : reason);
+
+        enqueue(payment, Topics.AUTHORIZATION_VOIDED, payment.getId().toString(), payload);
     }
 
     private LinkedHashMap<String, Object> baseEnvelope(String correlationId, String type) {
