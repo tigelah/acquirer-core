@@ -3,8 +3,12 @@ package br.com.tigelah.acquirercore.infrastructure.repositories;
 import br.com.tigelah.acquirercore.domain.model.Payment;
 import br.com.tigelah.acquirercore.domain.model.PaymentStatus;
 import br.com.tigelah.acquirercore.domain.ports.PaymentRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +40,15 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
     public Payment getOrThrow(UUID id) {
         return findById(id).orElseThrow(() -> new IllegalArgumentException("Payment not found: " + id));
     }
+
+    @Override
+    public List<Payment> findAuthorizedBefore(Instant cutoff, Integer limit) {
+        return jpa.findAuthorizedBefore(cutoff, PageRequest.of(0, limit))
+                .stream()
+                .map(PaymentRepositoryAdapter::toDomain)
+                .toList();
+    }
+
 
     private static PaymentEntity toEntity(Payment p) {
         var e = new PaymentEntity();

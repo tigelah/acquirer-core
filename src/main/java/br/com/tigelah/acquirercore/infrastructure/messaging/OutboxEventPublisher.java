@@ -72,6 +72,21 @@ public class OutboxEventPublisher implements EventPublisher {
         enqueue(payment, Topics.AUTHORIZATION_VOIDED, payment.getId().toString(), payload);
     }
 
+    @Override
+    public void publishAuthorizationExpired(Payment payment, String correlationId, String reason) {
+
+        var payload =  baseEnvelope(correlationId,  Topics.AUTHORIZATION_EXPIRED);
+
+        payload.put("paymentId", payment.getId().toString());
+        payload.put("accountId",payment.getAccountId() == null ? null : payment.getAccountId().toString());
+        payload.put("amountCents", payment.getAmountCents());
+        payload.put("currency", payment.getCurrency());
+        payload.put("reason", reason == null ? "preauth_expired" : reason);
+
+        enqueue(payment, Topics.AUTHORIZATION_EXPIRED, payment.getId().toString(), payload);
+
+    }
+
     private LinkedHashMap<String, Object> baseEnvelope(String correlationId, String type) {
         var payload = new LinkedHashMap<String, Object>();
         payload.put("eventId", UUID.randomUUID().toString());

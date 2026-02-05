@@ -2,6 +2,7 @@ package br.com.tigelah.acquirercore.infrastructure.config;
 
 import br.com.tigelah.acquirercore.application.usecase.AuthorizePaymentUseCase;
 import br.com.tigelah.acquirercore.application.usecase.CapturePaymentUseCase;
+import br.com.tigelah.acquirercore.application.usecase.ExpireAuthorizationsUseCase;
 import br.com.tigelah.acquirercore.application.usecase.GetPaymentUseCase;
 import br.com.tigelah.acquirercore.domain.ports.*;
 import org.springframework.context.annotation.Bean;
@@ -37,5 +38,10 @@ public class UseCaseConfig {
     @Bean
     public GetPaymentUseCase getPaymentUseCase(PaymentRepository payments) {
         return new GetPaymentUseCase(payments);
+    }
+
+    @Bean
+    public ExpireAuthorizationsUseCase expireAuthorizationsUseCase(PaymentRepository payments, EventPublisher events, Clock clock) {
+        return new ExpireAuthorizationsUseCase(payments,events,clock);
     }
 }

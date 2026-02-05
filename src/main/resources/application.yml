@@ -27,6 +27,11 @@ spring:
       auto-offset-reset: earliest
     producer:
       acks: all
+  preauth:
+    ttl-days: 7
+    batch-limit: 200
+    expirer:
+      delay-ms: 60000
 
 management:
   endpoints:

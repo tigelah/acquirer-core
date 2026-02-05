@@ -6,4 +6,5 @@ public interface EventPublisher {
     void publishAuthorizeRequested(Payment payment, String correlationId, String idempotencyKey);
     void publishCaptureRequested(Payment payment, String correlationId);
     void publishAuthorizationVoided(Payment payment, String correlationId, String reason);
+    void publishAuthorizationExpired(Payment payment, String correlationId, String reason);
 }
