@@ -56,7 +56,7 @@ public class RequestRefundUseCase {
             throw new IllegalStateException("refund_not_allowed");
         }
 
-        long inFlightOrFinalRefunded = refunds.sumByPaymentIdAndStatuses(
+        long alreadyRefunded = refunds.sumByPaymentIdAndStatuses(
                 payment.getId(),
                 List.of(
                         RefundStatus.REQUESTED,
@@ -67,7 +67,10 @@ public class RequestRefundUseCase {
                 )
         );
 
-        syncPaymentRefundedAmountIfNeeded(payment, inFlightOrFinalRefunded);
+        if (payment.getRefundedAmountCents() != alreadyRefunded) {
+            payment.setRefundedAmountCents(alreadyRefunded);
+            payments.save(payment);
+        }
 
         long availableAmount = payment.availableToRefund();
         long requestedAmount = resolveRequestedAmount(cmd.amountCents(), availableAmount);
@@ -103,31 +106,16 @@ public class RequestRefundUseCase {
         if (availableAmount <= 0) {
             throw new IllegalStateException("no_refundable_balance");
         }
-
         if (amountCents == null) {
             return availableAmount;
         }
-
         if (amountCents <= 0) {
             throw new IllegalArgumentException("invalid_refund_amount");
         }
-
         if (amountCents > availableAmount) {
             throw new IllegalArgumentException("refund_amount_exceeds_available");
         }
-
         return amountCents;
-    }
-
-    private void syncPaymentRefundedAmountIfNeeded(Payment payment, long repositoryRefundedAmount) {
-        if (repositoryRefundedAmount < 0 || repositoryRefundedAmount > payment.getAmountCents()) {
-            throw new IllegalStateException("invalid_refund_state");
-        }
-
-        if (payment.getRefundedAmountCents() != repositoryRefundedAmount) {
-            payment.setRefundedAmountCents(repositoryRefundedAmount);
-            payments.save(payment);
-        }
     }
 
     private String normalizeCorrelationId(String correlationId) {

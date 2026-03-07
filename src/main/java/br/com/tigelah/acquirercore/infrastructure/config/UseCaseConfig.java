@@ -1,8 +1,20 @@
 package br.com.tigelah.acquirercore.infrastructure.config;
 
 import br.com.tigelah.acquirercore.application.events.RefundEventRouter;
-import br.com.tigelah.acquirercore.application.usecase.*;
-import br.com.tigelah.acquirercore.domain.ports.*;
+import br.com.tigelah.acquirercore.application.usecase.AuthorizePaymentUseCase;
+import br.com.tigelah.acquirercore.application.usecase.CapturePaymentUseCase;
+import br.com.tigelah.acquirercore.application.usecase.ExpireAuthorizationsUseCase;
+import br.com.tigelah.acquirercore.application.usecase.GetPaymentUseCase;
+import br.com.tigelah.acquirercore.application.usecase.HandleRefundEventUseCase;
+import br.com.tigelah.acquirercore.application.usecase.RequestRefundUseCase;
+import br.com.tigelah.acquirercore.application.usecase.VoidAuthorizationUseCase;
+import br.com.tigelah.acquirercore.domain.ports.BrandNetwork;
+import br.com.tigelah.acquirercore.domain.ports.CardCertifier;
+import br.com.tigelah.acquirercore.domain.ports.EventPublisher;
+import br.com.tigelah.acquirercore.domain.ports.IdempotencyStore;
+import br.com.tigelah.acquirercore.domain.ports.PaymentRepository;
+import br.com.tigelah.acquirercore.domain.ports.RefundEventPublisher;
+import br.com.tigelah.acquirercore.domain.ports.RefundRepository;
 import br.com.tigelah.acquirercore.domain.service.RefundFeeRecalculationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -90,4 +102,3 @@ public class UseCaseConfig {
         return new HandleRefundEventUseCase(refunds, payments, refundEventRouter);
     }
 }
-

@@ -14,10 +14,12 @@ public class Payment {
     private PaymentStatus status;
     private String authCode;
     private final Instant createdAt;
+
     private UUID accountId;
     private String userId;
     private String panHash;
     private Integer installments;
+
     private long refundedAmountCents;
     private PaymentFees fees;
 
@@ -46,73 +48,81 @@ public class Payment {
         this.fees = PaymentFees.zero();
     }
 
-    public boolean canCapture() {
-        return status == PaymentStatus.AUTHORIZED_HOLD;
+    public void setInstallments(Integer installments) {
+        if (installments == null || installments < 1) {
+            throw new IllegalArgumentException("installments must be >= 1");
+        }
+        this.installments = installments;
     }
 
     public void markAuthRequested() {
-        ensureStatus(PaymentStatus.CREATED);
+        ensureStatus(PaymentStatus.CREATED, "auth request");
         this.status = PaymentStatus.AUTH_REQUESTED;
     }
 
-    public void authorize(String authCode) {
-        ensureStatus(PaymentStatus.AUTH_REQUESTED);
-        this.authCode = requireNonBlank(authCode, "authCode");
-        this.status = PaymentStatus.AUTHORIZED_HOLD;
-    }
-
-    public void decline() {
-        if (status != PaymentStatus.AUTH_REQUESTED) {
-            throw new IllegalStateException("payment cannot be declined from " + status);
-        }
-        this.status = PaymentStatus.DECLINED;
-    }
-
-    public void rejectByRisk() {
-        if (status != PaymentStatus.AUTH_REQUESTED) {
-            throw new IllegalStateException("payment cannot be risk rejected from " + status);
-        }
+    public void markRiskRejected() {
+        ensureStatus(PaymentStatus.AUTH_REQUESTED, "risk rejected");
         this.status = PaymentStatus.RISK_REJECTED;
     }
 
+    public void authorize(String authCode) {
+        ensureStatus(PaymentStatus.AUTH_REQUESTED, "authorize");
+        this.status = PaymentStatus.AUTHORIZED_HOLD;
+        this.authCode = requireNonBlank(authCode, "authCode");
+    }
+
+    public void markAuthorizedHold(String authCode) {
+        ensureStatus(PaymentStatus.AUTH_REQUESTED, "mark authorized hold");
+        this.status = PaymentStatus.AUTHORIZED_HOLD;
+        this.authCode = requireNonBlank(authCode, "authCode");
+    }
+
+    public void decline() {
+        ensureStatus(PaymentStatus.AUTH_REQUESTED, "decline");
+        this.status = PaymentStatus.DECLINED;
+    }
+
+    public boolean canCapture() {
+        return this.status == PaymentStatus.AUTHORIZED_HOLD;
+    }
+
     public void markCaptureRequested() {
-        ensureStatus(PaymentStatus.AUTHORIZED_HOLD);
+        ensureStatus(PaymentStatus.AUTHORIZED_HOLD, "capture request");
         this.status = PaymentStatus.CAPTURE_REQUESTED;
     }
 
     public void markCaptured() {
-        if (status != PaymentStatus.CAPTURE_REQUESTED && status != PaymentStatus.AUTHORIZED_HOLD) {
-            throw new IllegalStateException("payment cannot be captured from " + status);
-        }
+        ensureStatus(PaymentStatus.CAPTURE_REQUESTED, "captured");
         this.status = PaymentStatus.CAPTURED;
     }
 
     public void markSettled() {
-        if (status != PaymentStatus.CAPTURED && status != PaymentStatus.PARTIALLY_REFUNDED) {
-            throw new IllegalStateException("payment cannot be settled from " + status);
+        if (this.status != PaymentStatus.CAPTURED
+                && this.status != PaymentStatus.PARTIALLY_REFUNDED) {
+            throw new IllegalStateException("Payment must be CAPTURED or PARTIALLY_REFUNDED to be SETTLED");
         }
         this.status = PaymentStatus.SETTLED;
     }
 
     public void voidAuthorization() {
-        ensureStatus(PaymentStatus.AUTHORIZED_HOLD);
+        ensureStatus(PaymentStatus.AUTHORIZED_HOLD, "void authorization");
         this.status = PaymentStatus.VOIDED;
     }
 
     public void expireAuthorization() {
-        ensureStatus(PaymentStatus.AUTHORIZED_HOLD);
+        ensureStatus(PaymentStatus.AUTHORIZED_HOLD, "expire authorization");
         this.status = PaymentStatus.EXPIRED;
     }
 
     public boolean canRefund() {
-        return status == PaymentStatus.CAPTURED
-                || status == PaymentStatus.SETTLED
-                || status == PaymentStatus.PARTIALLY_REFUNDED;
+        return this.status == PaymentStatus.CAPTURED
+                || this.status == PaymentStatus.SETTLED
+                || this.status == PaymentStatus.PARTIALLY_REFUNDED;
     }
 
     public long availableToRefund() {
-        long available = amountCents - refundedAmountCents;
-        return Math.max(available, 0);
+        long remaining = amountCents - refundedAmountCents;
+        return Math.max(remaining, 0);
     }
 
     public RefundType refundTypeFor(long refundAmountCents) {
@@ -122,7 +132,7 @@ public class Payment {
 
     public void registerRefund(long refundAmountCents) {
         if (!canRefund()) {
-            throw new IllegalStateException("payment cannot be refunded from " + status);
+            throw new IllegalStateException("payment cannot be refunded from status " + status);
         }
 
         validateRefundAmount(refundAmountCents);
@@ -136,35 +146,8 @@ public class Payment {
         }
     }
 
-    public boolean isFullyRefunded() {
-        return refundedAmountCents == amountCents;
-    }
-
-    public boolean isPartiallyRefunded() {
-        return refundedAmountCents > 0 && refundedAmountCents < amountCents;
-    }
-
     public void defineFees(PaymentFees fees) {
         this.fees = Objects.requireNonNull(fees);
-    }
-
-    public void setAccountId(UUID accountId) {
-        this.accountId = accountId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setPanHash(String panHash) {
-        this.panHash = panHash;
-    }
-
-    public void setInstallments(Integer installments) {
-        if (installments == null || installments <= 0) {
-            throw new IllegalArgumentException("installments must be > 0");
-        }
-        this.installments = installments;
     }
 
     public void setRefundedAmountCents(long refundedAmountCents) {
@@ -172,6 +155,24 @@ public class Payment {
             throw new IllegalArgumentException("invalid refundedAmountCents");
         }
         this.refundedAmountCents = refundedAmountCents;
+    }
+
+    public void bindLimitScope(UUID accountId, String userId, String panHash) {
+        this.accountId = accountId;
+        this.userId = userId;
+        this.panHash = panHash;
+    }
+
+    public void setAccountId(UUID accountId) {
+        this.accountId = Objects.requireNonNull(accountId, "accountId is required");
+    }
+
+    public void setUserId(String userId) {
+        this.userId = (userId == null || userId.isBlank()) ? null : userId;
+    }
+
+    public void setPanHash(String panHash) {
+        this.panHash = requireNonBlank(panHash, "panHash");
     }
 
     private void validateRefundAmount(long refundAmountCents) {
@@ -183,31 +184,33 @@ public class Payment {
         }
     }
 
-    private void ensureStatus(PaymentStatus expected) {
+    private void ensureStatus(PaymentStatus expected, String action) {
         if (this.status != expected) {
-            throw new IllegalStateException("expected status " + expected + " but was " + status);
+            throw new IllegalStateException(
+                    "Invalid state for " + action + ": expected " + expected + " but was " + this.status
+            );
         }
     }
 
-    private static String requireNonBlank(String value, String field) {
-        if (value == null || value.isBlank()) {
+    private static String requireNonBlank(String v, String field) {
+        if (v == null || v.isBlank()) {
             throw new IllegalArgumentException(field + " must not be blank");
         }
-        return value;
+        return v;
     }
 
+    public UUID getAccountId() { return accountId; }
+    public String getUserId() { return userId; }
+    public String getPanHash() { return panHash; }
     public UUID getId() { return id; }
-    public String getMerchantId() { return merchantId;}
-    public String getOrderId() { return orderId;}
-    public Long getAmountCents() { return amountCents;}
-    public String getCurrency() { return currency;}
-    public String getPanLast4() { return panLast4;}
-    public PaymentStatus getStatus() { return status;}
-    public String getAuthCode() { return authCode;}
-    public Instant getCreatedAt() { return createdAt;}
-    public UUID getAccountId() { return accountId;}
-    public String getUserId() { return userId;}
-    public String getPanHash() { return panHash;}
+    public String getMerchantId() { return merchantId; }
+    public String getOrderId() { return orderId; }
+    public Long getAmountCents() { return amountCents; }
+    public String getCurrency() { return currency; }
+    public String getPanLast4() { return panLast4; }
+    public PaymentStatus getStatus() { return status; }
+    public String getAuthCode() { return authCode; }
+    public Instant getCreatedAt() { return createdAt; }
     public Integer getInstallments() { return installments; }
     public long getRefundedAmountCents() { return refundedAmountCents; }
     public PaymentFees getFees() { return fees; }

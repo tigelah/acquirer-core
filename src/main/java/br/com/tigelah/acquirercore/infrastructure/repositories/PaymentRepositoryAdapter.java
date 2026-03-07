@@ -87,11 +87,9 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         if (e.accountId != null) {
             p.setAccountId(e.accountId);
         }
-
         if (e.userId != null && !e.userId.isBlank()) {
             p.setUserId(e.userId);
         }
-
         if (e.panHash != null && !e.panHash.isBlank()) {
             p.setPanHash(e.panHash);
         }
