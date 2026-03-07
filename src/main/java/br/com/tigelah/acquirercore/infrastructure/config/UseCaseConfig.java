@@ -1,5 +1,6 @@
 package br.com.tigelah.acquirercore.infrastructure.config;
 
+import br.com.tigelah.acquirercore.application.events.RefundEventRouter;
 import br.com.tigelah.acquirercore.application.usecase.*;
 import br.com.tigelah.acquirercore.domain.ports.*;
 import br.com.tigelah.acquirercore.domain.service.RefundFeeRecalculationService;
@@ -78,6 +79,15 @@ public class UseCaseConfig {
                 refundFeeRecalculationService,
                 clock
         );
+    }
+
+    @Bean
+    public HandleRefundEventUseCase handleRefundEventUseCase(
+            RefundRepository refunds,
+            PaymentRepository payments,
+            RefundEventRouter refundEventRouter
+    ) {
+        return new HandleRefundEventUseCase(refunds, payments, refundEventRouter);
     }
 }
 

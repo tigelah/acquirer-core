@@ -10,6 +10,6 @@ public class PaymentRiskRejectedHandler implements PaymentEventHandler {
 
     @Override
     public void handle(Payment payment, JsonNode event) {
-        payment.markRiskRejected();
+        payment.rejectByRisk();
     }
 }
