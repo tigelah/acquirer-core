@@ -1,8 +1,6 @@
 package br.com.tigelah.acquirercore.domain.ports;
 
 import br.com.tigelah.acquirercore.domain.model.Payment;
-import br.com.tigelah.acquirercore.infrastructure.repositories.PaymentEntity;
-import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.List;

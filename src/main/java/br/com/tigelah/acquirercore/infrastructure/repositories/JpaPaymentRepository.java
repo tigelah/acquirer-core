@@ -12,8 +12,9 @@ import java.util.UUID;
 public interface JpaPaymentRepository extends JpaRepository<PaymentEntity, UUID> {
     Optional<PaymentEntity> findByMerchantIdAndOrderId(String merchantId, String orderId);
     @Query("""
-        select p from PaymentEntity p
-        where p.status = 'AUTHORIZED'
+        select p
+        from PaymentEntity p
+        where p.status = 'AUTHORIZED_HOLD'
           and p.createdAt < :cutoff
         order by p.createdAt asc
     """)

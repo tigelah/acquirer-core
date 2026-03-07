@@ -4,7 +4,6 @@ import br.com.tigelah.acquirercore.domain.model.Payment;
 import br.com.tigelah.acquirercore.domain.model.PaymentStatus;
 import br.com.tigelah.acquirercore.domain.ports.PaymentRepository;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -33,12 +32,14 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
 
     @Override
     public Optional<Payment> findByMerchantAndOrder(String merchantId, String orderId) {
-        return jpa.findByMerchantIdAndOrderId(merchantId, orderId).map(PaymentRepositoryAdapter::toDomain);
+        return jpa.findByMerchantIdAndOrderId(merchantId, orderId)
+                .map(PaymentRepositoryAdapter::toDomain);
     }
 
     @Override
     public Payment getOrThrow(UUID id) {
-        return findById(id).orElseThrow(() -> new IllegalArgumentException("Payment not found: " + id));
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + id));
     }
 
     @Override
@@ -48,7 +49,6 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
                 .map(PaymentRepositoryAdapter::toDomain)
                 .toList();
     }
-
 
     private static PaymentEntity toEntity(Payment p) {
         var e = new PaymentEntity();
@@ -64,26 +64,39 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         e.accountId = p.getAccountId();
         e.userId = p.getUserId();
         e.panHash = p.getPanHash();
-        p.setInstallments(e.installments == null ? 1 : e.installments);
-
+        e.installments = p.getInstallments() == null ? 1 : p.getInstallments();
         return e;
     }
 
     private static Payment toDomain(PaymentEntity e) {
-        var p = new Payment(e.id, e.merchantId, e.orderId, e.amountCents, e.currency, e.panLast4, e.createdAt);
+        var p = new Payment(
+                e.id,
+                e.merchantId,
+                e.orderId,
+                e.amountCents,
+                e.currency,
+                e.panLast4,
+                e.createdAt
+        );
 
         if (e.accountId != null) {
             p.setAccountId(e.accountId);
         }
+
         if (e.userId != null && !e.userId.isBlank()) {
             p.setUserId(e.userId);
         }
+
         if (e.panHash != null && !e.panHash.isBlank()) {
             p.setPanHash(e.panHash);
         }
 
-        e.installments = p.getInstallments() == null ? 1 : p.getInstallments();
+        p.setInstallments(e.installments == null ? 1 : e.installments);
 
-        return PaymentRehydrator.rehydrate(p, PaymentStatus.valueOf(e.status), e.authCode);
+        return PaymentRehydrator.rehydrate(
+                p,
+                PaymentStatus.valueOf(e.status),
+                e.authCode
+        );
     }
 }
