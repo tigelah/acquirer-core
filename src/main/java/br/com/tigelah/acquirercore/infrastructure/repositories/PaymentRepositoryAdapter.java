@@ -1,6 +1,7 @@
 package br.com.tigelah.acquirercore.infrastructure.repositories;
 
 import br.com.tigelah.acquirercore.domain.model.Payment;
+import br.com.tigelah.acquirercore.domain.model.PaymentFees;
 import br.com.tigelah.acquirercore.domain.model.PaymentStatus;
 import br.com.tigelah.acquirercore.domain.ports.PaymentRepository;
 import org.springframework.data.domain.PageRequest;
@@ -65,6 +66,10 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         e.userId = p.getUserId();
         e.panHash = p.getPanHash();
         e.installments = p.getInstallments() == null ? 1 : p.getInstallments();
+        e.refundedAmountCents = p.getRefundedAmountCents();
+        e.mdrAmountCents = p.getFees() == null ? 0L : p.getFees().getMdrAmountCents();
+        e.acquirerFeeAmountCents = p.getFees() == null ? 0L : p.getFees().getAcquirerFeeAmountCents();
+        e.brandFeeAmountCents = p.getFees() == null ? 0L : p.getFees().getBrandFeeAmountCents();
         return e;
     }
 
@@ -92,6 +97,12 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
         }
 
         p.setInstallments(e.installments == null ? 1 : e.installments);
+        p.setRefundedAmountCents(e.refundedAmountCents == null ? 0L : e.refundedAmountCents);
+        p.defineFees(new PaymentFees(
+                e.mdrAmountCents == null ? 0L : e.mdrAmountCents,
+                e.acquirerFeeAmountCents == null ? 0L : e.acquirerFeeAmountCents,
+                e.brandFeeAmountCents == null ? 0L : e.brandFeeAmountCents
+        ));
 
         return PaymentRehydrator.rehydrate(
                 p,

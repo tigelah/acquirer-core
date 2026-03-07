@@ -15,4 +15,11 @@ public final class Topics {
     public static final String SETTLEMENT_COMPLETED = "settlement.completed";
     public static final String AUTHORIZATION_VOIDED = "authorization.voided";
     public static final String AUTHORIZATION_EXPIRED = "authorization.expired";
+
+    public static final String REFUND_REQUESTED = "refund.requested";
+    public static final String REFUND_ISSUED = "refund.issued";
+    public static final String REFUND_LEDGER_APPLIED = "refund.ledger.applied";
+    public static final String REFUND_SETTLEMENT_ADJUSTMENT_REQUESTED = "refund.settlement.adjustment.requested";
+    public static final String REFUND_COMPLETED = "refund.completed";
+    public static final String REFUND_FAILED = "refund.failed";
 }

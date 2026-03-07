@@ -51,5 +51,17 @@ public class PaymentEntity {
 
     @Column(name = "installments", nullable = false)
     public Integer installments;
+
+    @Column(name = "refundedAmountCents", nullable = false)
+    public Long refundedAmountCents;
+
+    @Column(name = "mdrAmountCents", nullable = false)
+    public Long mdrAmountCents;
+
+    @Column(name = "acquirerFeeAmountCents", nullable = false)
+    public Long acquirerFeeAmountCents;
+
+    @Column(name = "brandFeeAmountCents", nullable = false)
+    public Long brandFeeAmountCents;
 }
 
