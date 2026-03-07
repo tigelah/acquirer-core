@@ -46,6 +46,10 @@ public class Payment {
         this.fees = PaymentFees.zero();
     }
 
+    public boolean canCapture() {
+        return status == PaymentStatus.AUTHORIZED_HOLD;
+    }
+
     public void markAuthRequested() {
         ensureStatus(PaymentStatus.CREATED);
         this.status = PaymentStatus.AUTH_REQUESTED;

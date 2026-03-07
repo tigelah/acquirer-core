@@ -2,6 +2,7 @@ package br.com.tigelah.acquirercore.infrastructure.config;
 
 import br.com.tigelah.acquirercore.application.usecase.*;
 import br.com.tigelah.acquirercore.domain.ports.*;
+import br.com.tigelah.acquirercore.domain.service.RefundFeeRecalculationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +14,11 @@ public class UseCaseConfig {
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
+    }
+
+    @Bean
+    public RefundFeeRecalculationService refundFeeRecalculationService() {
+        return new RefundFeeRecalculationService();
     }
 
     @Bean
@@ -28,7 +34,10 @@ public class UseCaseConfig {
     }
 
     @Bean
-    public CapturePaymentUseCase capturePaymentUseCase(PaymentRepository payments, EventPublisher events) {
+    public CapturePaymentUseCase capturePaymentUseCase(
+            PaymentRepository payments,
+            EventPublisher events
+    ) {
         return new CapturePaymentUseCase(payments, events);
     }
 
@@ -38,12 +47,37 @@ public class UseCaseConfig {
     }
 
     @Bean
-    public ExpireAuthorizationsUseCase expireAuthorizationsUseCase(PaymentRepository payments, EventPublisher events, Clock clock) {
-        return new ExpireAuthorizationsUseCase(payments,events,clock);
+    public ExpireAuthorizationsUseCase expireAuthorizationsUseCase(
+            PaymentRepository payments,
+            EventPublisher events,
+            Clock clock
+    ) {
+        return new ExpireAuthorizationsUseCase(payments, events, clock);
     }
 
     @Bean
-    public VoidAuthorizationUseCase voidAuthorizationUseCase(PaymentRepository payments, EventPublisher events) {
-        return new VoidAuthorizationUseCase(payments,events);
+    public VoidAuthorizationUseCase voidAuthorizationUseCase(
+            PaymentRepository payments,
+            EventPublisher events
+    ) {
+        return new VoidAuthorizationUseCase(payments, events);
+    }
+
+    @Bean
+    public RequestRefundUseCase requestRefundUseCase(
+            PaymentRepository payments,
+            RefundRepository refunds,
+            RefundEventPublisher refundEvents,
+            RefundFeeRecalculationService refundFeeRecalculationService,
+            Clock clock
+    ) {
+        return new RequestRefundUseCase(
+                payments,
+                refunds,
+                refundEvents,
+                refundFeeRecalculationService,
+                clock
+        );
     }
 }
+
